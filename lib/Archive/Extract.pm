@@ -434,9 +434,8 @@ sub bin_bunzip2 { return $PROGRAMS->{'bunzip2'} if $PROGRAMS->{'bunzip2'} }
 sub _untar {
     my $self = shift;
 
-    ### no bzip2 support in A::T yet
-    my   @methods = qw[_untar_bin];
-    push @methods,  qw[_untar_at] unless $self->is_tbz;
+    ### bzip2 support in A::T via IO::Uncompress::Bzip2
+    my   @methods = qw[_untar_at _untar_bin];
          @methods = reverse @methods unless $PREFER_BIN;
 
     for my $method (@methods) {
@@ -561,6 +560,9 @@ sub _untar_at {
         }
     }
 
+    ### we might pass it a filehandle if it's a .tbz file..
+    my $fh_to_read = $self->archive;
+
     ### we will need Compress::Zlib too, if it's a tgz... and IO::Zlib
     ### if A::T's version is 0.99 or higher
     if( $self->is_tgz ) {
@@ -576,11 +578,28 @@ sub _untar_at {
                                 "install it as soon as possible.", $which));
 
         }
+    } elsif ( $self->is_tbz ) {
+        my $use_list = { 'IO::Uncompress::Bunzip2' => '0.0' };
+        unless( can_load( modules => $use_list ) ) {
+            return $self->_error(loc(
+                    "You do not have '%1' installed - Please " .
+                    "install it as soon as possible.", 
+                     'IO::Uncompress::Bunzip2'));
+        }
+
+        my $bz = IO::Uncompress::Bunzip2->new( $self->archive ) or
+            return $self->_error(loc("Unable to open '%1': %2",
+                            $self->archive,
+                            $IO::Uncompress::Bunzip2::Bunzip2Error));
+
+        $fh_to_read = $bz;
     }
 
     my $tar = Archive::Tar->new();
 
-    unless( $tar->read( $self->archive, $self->is_tgz ) ) {
+    ### only tell it it's compressed if it's a .tgz, as we give it a file
+    ### handle if it's a .tbz
+    unless( $tar->read( $fh_to_read, ( $self->is_tgz ? 1 : 0 ) ) ) {
         return $self->_error(loc("Unable to read '%1': %2", $self->archive,
                                     $Archive::Tar::error));
     }
@@ -869,8 +888,8 @@ sub __get_extract_dir {
 sub _bunzip2 {
     my $self = shift;
 
-    my @methods = qw[_bunzip2_bin];
-    #   @methods = reverse @methods if $PREFER_BIN;
+    my @methods = qw[_bunzip2_cz2 _bunzip2_bin];
+       @methods = reverse @methods if $PREFER_BIN;
 
     for my $method (@methods) {
         $self->_extractor($method) && return 1 if $self->$method();
@@ -918,6 +937,57 @@ sub _bunzip2_bin {
     return 1;
 }
 
+### using cz2, the compact versions... this we use mainly in archive::tar
+### extractor..
+# sub _bunzip2_cz1 {
+#     my $self = shift;
+# 
+#     my $use_list = { 'IO::Uncompress::Bunzip2' => '0.0' };
+#     unless( can_load( modules => $use_list ) ) {
+#         return $self->_error(loc("You do not have '%1' installed - Please " .
+#                         "install it as soon as possible.", 'IO::Uncompress::Bunzip2'));
+#     }
+# 
+#     my $bz = IO::Uncompress::Bunzip2->new( $self->archive ) or
+#                 return $self->_error(loc("Unable to open '%1': %2",
+#                             $self->archive,
+#                             $IO::Uncompress::Bunzip2::Bunzip2Error));
+# 
+#     my $fh = FileHandle->new('>'. $self->_gunzip_to) or
+#         return $self->_error(loc("Could not open '%1' for writing: %2",
+#                             $self->_gunzip_to, $! ));
+# 
+#     my $buffer;
+#     $fh->print($buffer) while $bz->read($buffer) > 0;
+#     $fh->close;
+# 
+#     ### set what files where extract, and where they went ###
+#     $self->files( [$self->_gunzip_to] );
+#     $self->extract_path( File::Spec->rel2abs(cwd()) );
+# 
+#     return 1;
+# }
+
+sub _bunzip2_cz2 {
+    my $self = shift;
+
+    my $use_list = { 'IO::Uncompress::Bunzip2' => '0.0' };
+    unless( can_load( modules => $use_list ) ) {
+        return $self->_error(loc("You do not have '%1' installed - Please " .
+                        "install it as soon as possible.", 'IO::Uncompress::Bunzip2'));
+    }
+
+    IO::Uncompress::Bunzip2::bunzip2($self->archive => $self->_gunzip_to)
+        or return $self->_error(loc("Unable to uncompress '%1': %2",
+                            $self->archive,
+                            $IO::Uncompress::Bunzip2::Bunzip2Error));
+
+    ### set what files where extract, and where they went ###
+    $self->files( [$self->_gunzip_to] );
+    $self->extract_path( File::Spec->rel2abs(cwd()) );
+
+    return 1;
+}
 
 
 #################################
