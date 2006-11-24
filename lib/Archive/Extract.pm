@@ -26,7 +26,7 @@ use constant TBZ            => 'tbz';
 
 use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG];
 
-$VERSION        = '0.14';
+$VERSION        = '0.15_01';
 $PREFER_BIN     = 0;
 $WARN           = 1;
 $DEBUG          = 0;
