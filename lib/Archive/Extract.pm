@@ -26,7 +26,7 @@ use constant TBZ            => 'tbz';
 
 use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG];
 
-$VERSION        = '0.12';
+$VERSION        = '0.14';
 $PREFER_BIN     = 0;
 $WARN           = 1;
 $DEBUG          = 0;
@@ -116,8 +116,8 @@ my $Mapping = {
     };
 
     ### build accesssors ###
-    for my $method( keys %$tmpl,
-                    qw[_extractor _gunzip_to files extract_path]
+    for my $method( keys %$tmpl, qw[_extractor _gunzip_to files extract_path],
+                    qw[_error_msg _error_msg_long]
     ) {
         no strict 'refs';
         *$method = sub {
@@ -491,10 +491,10 @@ sub _untar_bin {
                             $self->archive, $buffer ));
         }
 
-        unless( $buffer ) {
-            $self->_error(loc("No buffer captured, unable to tell ".
-                              "extracted files or extraction dir for '%1'",
-                              $self->archive));
+        ### no buffers available?
+        if( !IPC::Cmd->can_capture_buffer and !$buffer ) {
+            $self->_error( $self->_no_buffer_files( $self->archive ) );
+        
         } else {
             ### if we're on solaris we /might/ be using /bin/tar, which has
             ### a weird output format... we might also be using
@@ -668,9 +668,9 @@ sub _gunzip_bin {
                                     $self->archive, $buffer));
     }
 
-    unless( $buffer ) {
-        $self->_error(loc("No buffer captured, unable to get content for '%1'",
-                          $self->archive));
+    ### no buffers available?
+    if( !IPC::Cmd->can_capture_buffer and !$buffer ) {
+        $self->_error( $self->_no_buffer_content( $self->archive ) );
     }
 
     print $fh $buffer if defined $buffer;
@@ -753,10 +753,9 @@ sub _unzip_bin {
                                         $self->archive, $buffer));
         }
 
-        unless( $buffer ) {
-            $self->_error(loc("No buffer captured, unable to tell extracted ".
-                              "files or extraction dir for '%1'",
-                              $self->archive));
+        ### no buffers available?
+        if( !IPC::Cmd->can_capture_buffer and !$buffer ) {
+            $self->_error( $self->_no_buffer_files( $self->archive ) );
 
         } else {
             $self->files( [split $/, $buffer] );
@@ -903,11 +902,11 @@ sub _bunzip2_bin {
                                     $self->archive, $buffer));
     }
 
-    unless( $buffer ) {
-        $self->_error(loc("No buffer captured, unable to get content for '%1'",
-                          $self->archive));
+    ### no buffers available?
+    if( !IPC::Cmd->can_capture_buffer and !$buffer ) {
+        $self->_error( $self->_no_buffer_content( $self->archive ) );
     }
-
+    
     print $fh $buffer if defined $buffer;
 
     close $fh;
@@ -927,31 +926,39 @@ sub _bunzip2_bin {
 #
 #################################
 
-### Error handling, the way Archive::Tar does it ###
-{
-    my $error       = '';
-    my $longmess    = '';
-
-    sub _error {
-        my $self    = shift;
-        $error      = shift;
-        $longmess   = Carp::longmess($error);
-
-        ### set Archive::Tar::WARN to 0 to disable printing
-        ### of errors
-        if( $WARN ) {
-            carp $DEBUG ? $longmess : $error;
-        }
-
-        return;
+sub _error {
+    my $self    = shift;
+    my $error   = shift;
+    
+    $self->_error_msg( $error );
+    $self->_error_msg_long( Carp::longmess($error) );
+    
+    ### set Archive::Tar::WARN to 0 to disable printing
+    ### of errors
+    if( $WARN ) {
+        carp $DEBUG ? $self->_error_msg_long : $self->_error_msg;
     }
 
-    sub error {
-        my $self = shift;
-        return shift() ? $longmess : $error;
-    }
+    return;
 }
 
+sub error {
+    my $self = shift;
+    return shift() ? $self->_error_msg_long : $self->_error_msg;
+}
+
+sub _no_buffer_files {
+    my $self = shift;
+    my $file = shift or return;
+    return loc("No buffer captured, unable to tell ".
+               "extracted files or extraction dir for '%1'", $file);
+}
+
+sub _no_buffer_content {
+    my $self = shift;
+    my $file = shift or return;
+    return loc("No buffer captured, unable to get content for '%1'", $file);
+}
 1;
 
 =pod
