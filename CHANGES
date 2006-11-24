@@ -1,3 +1,8 @@
+Changes for 0.14    Fri Oct 20 14:37:36 2006
+============================================
+* Tweak tests to play nicer on win32
+* Up required version of IPC::Cmd
+
 Changes for 0.12    Sun Aug 13 14:55:54 2006
 ============================================
 * Add diagnostics during the test suite informing
