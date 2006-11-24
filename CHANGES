@@ -1,3 +1,17 @@
+Changes for 0.15_01 Fri Nov 24 15:07:44 2006
+============================================
+* Apply patch from Paul Marquess to add pure
+  perl support for bzip2 encoded files. This 
+  support requires you to have the module
+  IO::Uncompress::Bunzip2 installed.
+* Error storage is now per object like it should
+  be rather than class wide.
+* Update tests to not skip unnecessarily  
+* Up required version of IPC::Cmd to 0.36 for 
+  5.6.x compatibility
+* Improve diagnostics in the test suite when
+  run verbosely
+  
 Changes for 0.14    Fri Oct 20 14:37:36 2006
 ============================================
 * Tweak tests to play nicer on win32
