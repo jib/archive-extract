@@ -192,6 +192,8 @@ if( $Debug ) {
                       } $dir, File::Spec->catfile( $dir, [keys %$tmpl]->[0] );
         
         my $res = $Class->$meth( \@files );
+        $res = &Win32::GetShortPathName( $res ) if IS_WIN32;
+
         ok( $res,               "Found extraction dir '$res'" );
         is( $res, $SrcDir,      "   Is expected dir '$SrcDir'" );
     }        
