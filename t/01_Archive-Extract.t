@@ -262,10 +262,9 @@ for my $switch (0,1) {
         ### be a problem...
         local $IPC::Cmd::WARN = 0;
         local $IPC::Cmd::WARN = 0;
+        
+        for my $use_buffer ( IPC::Cmd->can_capture_buffer , 0 ) {
 
-        ### 'return; in list context doesn't provide an entry in the list :(
-        for my $use_buffer ( (IPC::Cmd->can_capture_buffer||0) , 0 ) {
-    
             ### test buffers ###
             my $turn_off = !$use_buffer && !$pgm_fail &&
                             $Archive::Extract::PREFER_BIN;
