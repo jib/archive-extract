@@ -5,7 +5,6 @@ BEGIN {
     }
 }    
 
-
 BEGIN { chdir 't' if -d 't' };
 BEGIN { mkdir 'out' unless -d 'out' };
 
