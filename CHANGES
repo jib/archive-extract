@@ -1,4 +1,11 @@
-Changes for 0.15_01 Sun Nov 26 18:06:02 2006
+Changes for 0.15_03 Thu Jan  4 14:46:58 2007
+============================================
+* address #23999: Attempt to generate Makefile.PL 
+  gone awry where paths starting with a '.' 
+  are sometimes reported to be extracted in '.' 
+  as well rather than their actual extraction dir.
+
+Changes for 0.15_02 Sun Nov 26 18:06:02 2006
 ============================================
 * fix testing logic error, that assumed extracted 
   files were always logged when we did not prefer 
