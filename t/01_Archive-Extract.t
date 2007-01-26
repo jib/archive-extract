@@ -39,7 +39,7 @@ if( IS_WIN32 or IS_CYGWIN ) {
 }
 
 my $Debug   = $ARGV[0] ? 1 : 0;
-
+my $Me      = basename( $0 );
 my $Class   = 'Archive::Extract';
 my $Self    = File::Spec->rel2abs( 
                     IS_WIN32 ? &Win32::GetShortPathName( cwd() ) : cwd() 
@@ -167,6 +167,21 @@ if( $Debug ) {
     diag( "IPC::Open3 vesion: $IPC::Open3::VERSION" );
 }
 
+### test all type specifications to new()
+### this tests bug #24578: Wrong check for `type' argument
+{   my $meth = 'types';
+
+    can_ok( $Class, $meth );
+
+    my @types = $Class->$meth;
+    ok( scalar(@types),         "   Got a list of types" );
+    
+    for my $type ( @types ) {
+        my $obj = $Class->new( archive => $Me, type => $type );
+        ok( $obj,               "   Object created based on '$type'" );
+        ok( !$obj->error,       "       No error logged" );
+    }
+}    
 
 ### XXX whitebox test
 ### test __get_extract_dir 
