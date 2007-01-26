@@ -1,3 +1,10 @@
+Changes for 0.16    Fri Jan 26 11:07:24 2007
+============================================
+* address #24578: Wrong check for `type' argument
+* add new method ->types that returns a list of
+  all supported archive types
+* promote 0.15_03 to stable  
+
 Changes for 0.15_03 Thu Jan  4 14:46:58 2007
 ============================================
 * address #23999: Attempt to generate Makefile.PL 
