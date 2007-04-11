@@ -192,7 +192,7 @@ Returns a C<Archive::Extract> object on success, or false on failure.
         ### figure out the type, if it wasn't already specified ###
         unless ( $parsed->{type} ) {
             $parsed->{type} =
-                $ar =~ /.+?\.(?:tar\.gz)|tgz$/i     ? TGZ   :
+                $ar =~ /.+?\.(?:tar\.gz|tgz)$/i     ? TGZ   :
                 $ar =~ /.+?\.gz$/i                  ? GZ    :
                 $ar =~ /.+?\.tar$/i                 ? TAR   :
                 $ar =~ /.+?\.(zip|jar|par)$/i       ? ZIP   :
