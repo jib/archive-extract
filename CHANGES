@@ -1,3 +1,13 @@
+Changes for 0.18    Wed Apr 11 21:20:53 2007
+============================================
+* Starting 5.9.5, this module installs itself in
+  the core-perl dir, rather than site-perl, as it's
+  now part of core.
+* Reverse '$PREFER_BIN' conditional for tar/tar.gz
+  files. The current logic was actually exactly the
+  wrong way around.
+* Small regex change to tar/tar.gz detection.  
+
 Changes for 0.16    Fri Jan 26 11:07:24 2007
 ============================================
 * address #24578: Wrong check for `type' argument
