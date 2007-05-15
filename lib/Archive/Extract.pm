@@ -1119,6 +1119,8 @@ Defaults to C<false>.
 Maybe this module should use something like C<File::Type> to determine
 the type, rather than blindly trust the suffix.
 
+=back
+
 =head1 BUG REPORTS
 
 Please report bugs or other issues to E<lt>bug-archive-extract@rt.cpan.org<gt>.
