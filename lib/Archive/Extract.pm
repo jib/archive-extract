@@ -28,7 +28,7 @@ use constant Z              => 'Z';
 
 use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG];
 
-$VERSION        = '0.18';
+$VERSION        = '0.20';
 $PREFER_BIN     = 0;
 $WARN           = 1;
 $DEBUG          = 0;
@@ -87,9 +87,9 @@ Archive::Extract - A generic archive extracting mechanism
 Archive::Extract is a generic archive extraction mechanism.
 
 It allows you to extract any archive file of the type .tar, .tar.gz,
-.gz, tar.bz2, .tbz, .bz2 or .zip without having to worry how it does 
-so, or use different interfaces for each type by using either perl 
-modules, or commandline tools on your system.
+.gz, .Z, tar.bz2, .tbz, .bz2 or .zip without having to worry how it 
+does so, or use different interfaces for each type by using either 
+perl modules, or commandline tools on your system.
 
 See the C<HOW IT WORKS> section further down for details.
 

@@ -1,3 +1,9 @@
+Changes for 0.20    Mon May 28 12:06:33 2007
+============================================
+* Address #27195: Implement support for .Z files.
+* Small POD fixes
+* Disable some test diagnostics under perl core tests
+
 Changes for 0.18    Wed Apr 11 21:20:53 2007
 ============================================
 * Starting 5.9.5, this module installs itself in
