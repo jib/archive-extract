@@ -1,3 +1,9 @@
+Changes for 0.22    Tue May 29 21:18:46 2007
+============================================
+* Manifest didn't include one of the source files
+  for tests. If you have 0.20 installed there is no
+  need to upgrade. This is just a test suite fix.
+  
 Changes for 0.20    Mon May 28 12:06:33 2007
 ============================================
 * Address #27195: Implement support for .Z files.
