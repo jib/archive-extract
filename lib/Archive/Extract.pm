@@ -1149,6 +1149,17 @@ your archives do not have any of the extensions as described in the
 C<new()> method, you will have to specify the type explicitly, or
 C<Archive::Extract> will not be able to extract the archive for you.
 
+=head2 Supporting Very Large Files
+
+C<Archive::Extract> can use either pure perl modules or command line
+programs under the hood. Some of the pure perl modules (like 
+C<Archive::Tar> take the entire contents of the archive into memory,
+which may not be feasible on your system. Consider setting the global
+variable C<$Archive::Extract::PREFER_BIN> to C<1>, which will prefer
+the use of command line programs and won't consume so much memory.
+
+See the C<GLOBAL VARIABLES> section below for details.
+
 =head1 GLOBAL VARIABLES
 
 =head2 $Archive::Extract::DEBUG
