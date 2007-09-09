@@ -1,3 +1,10 @@
+Changes for 0.23_01 Sun Sep  9 12:39:08 2007
+============================================
+* Address Update ticket #27991 (Archive::Extract and 
+  very large tar.gz files). Add a CAVEATS entry explianing 
+  how to deal with large files & memory consumption 
+* VMS shell out & test fixes by John Malmberg
+
 Changes for 0.22    Tue May 29 21:18:46 2007
 ============================================
 * Manifest didn't include one of the source files

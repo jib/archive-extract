@@ -31,7 +31,7 @@ use constant Z              => 'Z';
 
 use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG];
 
-$VERSION        = '0.22';
+$VERSION        = '0.23_01';
 $PREFER_BIN     = 0;
 $WARN           = 1;
 $DEBUG          = 0;
@@ -857,8 +857,6 @@ sub _unzip_bin {
     {   ### on VMS, capital letter options have to be quoted. This is
         ### peported by John Malmberg on P5P Tue 21 Aug 2007 05:05:11 
         ### Subject: [patch@31735]Archive Extract fix on VMS.
-        ### another patch to the test suite was *not* applied as it
-        ### seemed faulty. Reply sent.
         my $opt = ON_VMS ? '"-Z"' : '-Z';
         my $cmd = [ $self->bin_unzip, $opt, '-1', $self->archive ];
 	
