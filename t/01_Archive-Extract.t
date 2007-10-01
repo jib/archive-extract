@@ -8,6 +8,9 @@ BEGIN {
 BEGIN { chdir 't' if -d 't' };
 BEGIN { mkdir 'out' unless -d 'out' };
 
+### left behind, at least on Win32. See core patch #31904
+END   { rmtree('out') };        
+
 use strict;
 use lib qw[../lib];
 
