@@ -1,3 +1,12 @@
+Changes for 0.24    Thu Sep 20 15:05:55 2007
+============================================
+* Older versions of /bin/bunzip2 only support archives
+  with a .bz2 suffix. Attempt to detect this with a new
+  method ->have_old_bunzip2, and skip tests accordingly.
+  Also document this in the CAVEATS section of the docs.
+* Apply core change 31904: Clean up test files left 
+  behind (on Win32, at least).
+
 Changes for 0.23_01 Sun Sep  9 12:39:08 2007
 ============================================
 * Address Update ticket #27991 (Archive::Extract and 
