@@ -163,6 +163,17 @@ my $tmpl = {
                 },
 };
 
+### XXX special case: on older solaris boxes (8),
+### bunzip2 is version 0.9.x. Older versions (pre 1),
+### only extract files that end in .bz2, and nothing
+### else. So remove that test case if we have an older
+### bunzip2 :(
+{   if( $Class->have_old_bunzip2 ) {
+        delete $tmpl->{'y.tbz'};
+        diag "Old bunzip2 detected, skipping .tbz test";
+    }
+}    
+
 ### show us the tools IPC::Cmd will use to run binary programs
 if( $Debug ) {
     diag( "IPC::Run enabled: $IPC::Cmd::USE_IPC_RUN " );
@@ -283,7 +294,6 @@ for my $switch (0,1) {
 
         skip "No binaries or modules to extract ".$archive, 
             (10 * scalar @outs) if $mod_fail && $pgm_fail;
-
 
         ### we dont warnings spewed about missing modules, that might
         ### be a problem...
