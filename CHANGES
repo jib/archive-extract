@@ -1,3 +1,14 @@
+Changes for 0.26    Sun Jan 27 16:31:20 2008
+============================================
+* Address #32370: Archive::Extract will hang if stdin 
+  is a pipe. /bin/bunzip2 tried to read STDIN when printing
+  out it's '--version'. 
+* Address rt #32336 by a.r.ferreira@gmail.com to add .lzma 
+  support to archive::extract 
+* Older versions of bunzip2 insist on a .bz2 suffix to extract 
+  things. Guard against this, adapt the test suite and mention 
+  it in the caveats. 
+
 Changes for 0.24    Thu Sep 20 15:05:55 2007
 ============================================
 * Older versions of /bin/bunzip2 only support archives

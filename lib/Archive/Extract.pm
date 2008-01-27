@@ -32,7 +32,7 @@ use constant LZMA           => 'lzma';
 
 use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG];
 
-$VERSION        = '0.24';
+$VERSION        = '0.26';
 $PREFER_BIN     = 0;
 $WARN           = 1;
 $DEBUG          = 0;
