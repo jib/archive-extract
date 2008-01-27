@@ -500,8 +500,16 @@ sub have_old_bunzip2 {
     ### $ echo $?
     ### 1
     ### HATEFUL!
+    
+    ### double hateful: bunzip2 --version also hangs if input is a pipe
+    ### See #32370: Archive::Extract will hang if stdin is a pipe [+PATCH]
+    ### So, we have to provide *another* argument which is a fake filename,
+    ### just so it wont try to read from stdin to print it's version..
+    ### *sigh*
+    ### Even if the file exists, it won't clobber or change it.
     my $buffer;
-    scalar run( command => [$self->bin_bunzip2, '--version'],
+    scalar run( 
+         command => [$self->bin_bunzip2, '--version', 'NoSuchFile'],
          verbose => 0,
          buffer  => \$buffer
     );
