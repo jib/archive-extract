@@ -122,14 +122,15 @@ my $Mapping = {
 
 {
     my $tmpl = {
-        archive => { required => 1, allow => FILE_EXISTS },
-        type    => { default => '', allow => [ @Types ] },
+        archive         => { required => 1, allow => FILE_EXISTS },
+        type            => { default => '', allow => [ @Types ] },
+        _error_msg      => { no_override => 1, default => [], },
+        _error_msg_long => { no_override => 1, default => [], },
     };
 
     ### build accesssors ###
     for my $method( keys %$tmpl, 
                     qw[_extractor _gunzip_to files extract_path],
-                    qw[_error_msg _error_msg_long]
     ) {
         no strict 'refs';
         *$method = sub {
@@ -278,6 +279,10 @@ the tar specification.
 sub extract {
     my $self = shift;
     my %hash = @_;
+
+    ### reset error messages
+    $self->_error_msg( [] );
+    $self->_error_msg_long( [] );
 
     my $to;
     my $tmpl = {
@@ -1267,14 +1272,15 @@ sub _unlzma_cz {
 sub _error {
     my $self    = shift;
     my $error   = shift;
-    
-    $self->_error_msg( $error );
-    $self->_error_msg_long( Carp::longmess($error) );
+    my $lerror  = Carp::longmess($error);
+
+    push @{$self->_error_msg},      $error;
+    push @{$self->_error_msg_long}, $lerror;
     
     ### set $Archive::Extract::WARN to 0 to disable printing
     ### of errors
     if( $WARN ) {
-        carp $DEBUG ? $self->_error_msg_long : $self->_error_msg;
+        carp $DEBUG ? $lerror : $error;
     }
 
     return;
@@ -1282,7 +1288,11 @@ sub _error {
 
 sub error {
     my $self = shift;
-    return shift() ? $self->_error_msg_long : $self->_error_msg;
+
+    ### make sure we have a fallback aref
+    my $aref = do { shift() ? $self->_error_msg_long : $self->_error_msg } || [];
+   
+    return join $/, @$aref;
 }
 
 sub _no_buffer_files {

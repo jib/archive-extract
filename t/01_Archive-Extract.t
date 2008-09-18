@@ -209,6 +209,33 @@ if( $Debug ) {
     }
 }    
 
+### test multiple errors
+### XXX whitebox test
+{   ### grab a random file from the template, so we can make an object
+    my $ae = Archive::Extract->new( archive =>  File::Spec->catfile($SrcDir,[keys %$tmpl]->[0]) );
+    ok( $ae,                    "Archive created" );
+    ok( not($ae->error),        "   No errors yet" );
+
+    ### log a few errors
+    {   local $Archive::Extract::WARN = 0;
+        $ae->_error( $_ ) for 1..5;
+    }
+
+    my $err = $ae->error;
+    ok( $err,                   "   Errors retrieved" );
+    
+    my $expect = join $/, 1..5;
+    is( $err, $expect,          "       As expected" );
+
+    ### this resets the errors
+    ### override the 'check' routine to return false, so we bail out of extract()
+    ### early and just run the error reset code;
+    {   local *Archive::Extract::check= sub { return }; 
+        $ae->extract;
+    }
+    ok( not($ae->error),        "   Errors erased after ->extract() call" );
+}
+
 ### XXX whitebox test
 ### test __get_extract_dir 
 SKIP: {   my $meth = '__get_extract_dir';
