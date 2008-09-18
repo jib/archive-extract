@@ -240,11 +240,11 @@ C<cwd()>.
 
 Since C<.gz> files never hold a directory, but only a single file; if 
 the C<to> argument is an existing directory, the file is extracted 
-there, with it's C<.gz> suffix stripped. 
+there, with its C<.gz> suffix stripped. 
 If the C<to> argument is not an existing directory, the C<to> argument 
 is understood to be a filename, if the archive type is C<gz>. 
 In the case that you did not specify a C<to> argument, the output
-file will be the name of the archive file, stripped from it's C<.gz>
+file will be the name of the archive file, stripped from its C<.gz>
 suffix, in the current working directory.
 
 C<extract> will try a pure perl solution first, and then fall back to
@@ -509,7 +509,7 @@ sub have_old_bunzip2 {
     ### double hateful: bunzip2 --version also hangs if input is a pipe
     ### See #32370: Archive::Extract will hang if stdin is a pipe [+PATCH]
     ### So, we have to provide *another* argument which is a fake filename,
-    ### just so it wont try to read from stdin to print it's version..
+    ### just so it wont try to read from stdin to print its version..
     ### *sigh*
     ### Even if the file exists, it won't clobber or change it.
     my $buffer;
