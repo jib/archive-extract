@@ -1,3 +1,11 @@
+Changes for 0.27_01 Mon Sep 22 14:20:20 2008
+============================================
+* Address: #32751: incorrect error message
+  Multiple error messages are now joined and will only be 
+  reset upon next ->extract()
+* Test suite improvement to split binary from pure perl 
+  solutions to test implementations without fallback.
+
 Changes for 0.26    Sun Jan 27 16:31:20 2008
 ============================================
 * Address #32370: Archive::Extract will hang if stdin 
