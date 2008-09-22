@@ -212,7 +212,9 @@ if( $Debug ) {
 ### test multiple errors
 ### XXX whitebox test
 {   ### grab a random file from the template, so we can make an object
-    my $ae = Archive::Extract->new( archive =>  File::Spec->catfile($SrcDir,[keys %$tmpl]->[0]) );
+    my $ae = Archive::Extract->new( 
+                archive =>  File::Spec->catfile($SrcDir,[keys %$tmpl]->[0]) 
+             );
     ok( $ae,                    "Archive created" );
     ok( not($ae->error),        "   No errors yet" );
 
@@ -228,9 +230,10 @@ if( $Debug ) {
     is( $err, $expect,          "       As expected" );
 
     ### this resets the errors
-    ### override the 'check' routine to return false, so we bail out of extract()
-    ### early and just run the error reset code;
-    {   local *Archive::Extract::check= sub { return }; 
+    ### override the 'check' routine to return false, so we bail out of 
+    ### extract() early and just run the error reset code;
+    {   no warnings qw[once redefine];
+        local *Archive::Extract::check = sub { return }; 
         $ae->extract;
     }
     ok( not($ae->error),        "   Errors erased after ->extract() call" );
@@ -270,11 +273,13 @@ SKIP: {   my $meth = '__get_extract_dir';
     }        
 }
 
-for my $switch (0,1) {
+### configuration to run in: allow perl or allow binaries
+for my $switch ( [0,1], [1,0] ) {
 
-    local $Archive::Extract::PREFER_BIN = $switch;
-    diag("Running extract with PREFER_BIN = $Archive::Extract::PREFER_BIN")
-        if $Debug;
+    local $Archive::Extract::_ALLOW_PURE_PERL   = $switch->[0];
+    local $Archive::Extract::_ALLOW_BIN         = $switch->[1];
+    
+    diag("Running extract with configuration: ", join ' ', @$switch) if $Debug;
 
     for my $archive (keys %$tmpl) {
 
@@ -340,7 +345,7 @@ for my $switch (0,1) {
 
             ### test buffers ###
             my $turn_off = !$use_buffer && !$pgm_fail &&
-                            $Archive::Extract::PREFER_BIN;
+                            $Archive::Extract::_ALLOW_BIN;
 
             ### whitebox test ###
             ### stupid warnings ###
@@ -358,20 +363,24 @@ for my $switch (0,1) {
   
                 my $rv = $ae->extract( to => $to );
     
-                ok( $rv, "extract() for '$archive' reports success");
-    
-                diag("Extractor was: " . $ae->_extractor)   if $Debug;
-    
                 SKIP: {
                     my $re  = qr/^No buffer captured/;
                     my $err = $ae->error || '';
               
                     ### skip buffer tests if we dont have buffers or
                     ### explicitly turned them off
-                    skip "No buffers available", 7,
+                    skip "No buffers available", 8
                         if ( $turn_off || !IPC::Cmd->can_capture_buffer)
                             && $err =~ $re;
 
+                    ### skip tests if we dont have an extractor
+                    skip "No extractor available", 8 
+                        if $err =~ /Extract failed; no extractors available/;
+    
+                    ok( $rv, "extract() for '$archive' reports success");
+    
+                    diag("Extractor was: " . $ae->_extractor)   if $Debug;
+    
                     ### if we /should/ have buffers, there should be
                     ### no errors complaining we dont have them...
                     unlike( $err, $re,

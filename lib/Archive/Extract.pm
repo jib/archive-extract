@@ -20,6 +20,10 @@ use constant FILE_EXISTS    => sub { -e $_[0] ? 1 : 0 };
 ### VMS may require quoting upper case command options
 use constant ON_VMS         => $^O eq 'VMS' ? 1 : 0;
 
+### we can't use this extraction method, because of missing
+### modules/binaries:
+use constant METHOD_NA      => []; 
+
 ### If these are changed, update @TYPES and the new() POD
 use constant TGZ            => 'tgz';
 use constant TAR            => 'tar';
@@ -30,13 +34,19 @@ use constant TBZ            => 'tbz';
 use constant Z              => 'Z';
 use constant LZMA           => 'lzma';
 
-use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG];
+use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG 
+            $_ALLOW_BIN $_ALLOW_PURE_PERL
+         ];
 
-$VERSION        = '0.26';
-$PREFER_BIN     = 0;
-$WARN           = 1;
-$DEBUG          = 0;
-my @Types       = ( TGZ, TAR, GZ, ZIP, BZ2, TBZ, Z, LZMA ); # same as all constants
+$VERSION            = '0.26';
+$PREFER_BIN         = 0;
+$WARN               = 1;
+$DEBUG              = 0;
+$_ALLOW_PURE_PERL   = 1;    # allow pure perl extractors
+$_ALLOW_BIN         = 1;    # allow binary extractors
+
+# same as all constants
+my @Types           = ( TGZ, TAR, GZ, ZIP, BZ2, TBZ, Z, LZMA ); 
 
 local $Params::Check::VERBOSE = $Params::Check::VERBOSE = 1;
 
@@ -109,15 +119,15 @@ for my $pgm (qw[tar unzip gzip bunzip2 uncompress unlzma]) {
 }
 
 ### mapping from types to extractor methods ###
-my $Mapping = {
-    is_tgz  => '_untar',
-    is_tar  => '_untar',
-    is_gz   => '_gunzip',
-    is_zip  => '_unzip',
-    is_tbz  => '_untar',
-    is_bz2  => '_bunzip2',
-    is_Z    => '_uncompress',
-    is_lzma => '_unlzma',
+my $Mapping = {  # binary program           # pure perl module
+    is_tgz  => { bin => '_untar_bin',       pp => '_untar_at'   },
+    is_tar  => { bin => '_untar_bin',       pp => '_untar_at'   },
+    is_gz   => { bin => '_gunzip_bin',      pp => '_gunzip_cz'  },
+    is_zip  => { bin => '_unzip_bin',       pp => '_unzip_az'   },
+    is_tbz  => { bin => '_untar_bin',       pp => '_untar_at'   },
+    is_bz2  => { bin => '_bunzip2_bin',     pp => '_bunzip2_bz2'},
+    is_Z    => { bin => '_uncompress_bin',  pp => '_gunzip_cz'  },
+    is_lzma => { bin => '_unlzma_bin',      pp => '_unlzma_cz'  },
 };
 
 {
@@ -345,19 +355,50 @@ sub extract {
         ### ../lib/Archive/Extract.pm line 742. (rt #19815)
         $self->files( [] );
 
-        ### find what extractor method to use ###
-        while( my($type,$method) = each %$Mapping ) {
+        ### find out the dispatch methods needed for this type of 
+        ### archive. Do a $self->is_XXX to figure out the type, then
+        ### get the hashref with bin + pure perl dispatchers.
+        my ($map) = map { $Mapping->{$_} } grep { $self->$_ } keys %$Mapping;
 
-            ### call the corresponding method if the type is OK ###
-            if( $self->$type) {
-                $ok = $self->$method();
-            }
+        ### add pure perl extractor if allowed & add bin extractor if allowed
+        my @methods;
+        push @methods, $map->{'pp'}  if $_ALLOW_PURE_PERL;
+        push @methods, $map->{'bin'} if $_ALLOW_BIN;
+        
+        ### reverse it if we prefer bin extractors
+        @methods = reverse @methods if $PREFER_BIN;
+
+        my($na, $fail);
+        for my $method (@methods) {
+            print "# Extracting with ->$method\n" if $DEBUG;
+        
+            my $rv = $self->$method;
+            
+            ### a positive extraction
+            if( $rv and $rv ne METHOD_NA ) {
+                print "# Extraction succeeded\n" if $DEBUG;
+                $self->_extractor($method);
+                last;
+            
+            ### method is not available
+            } elsif ( $rv and $rv eq METHOD_NA ) {               
+                print "# Extraction method not available\n" if $DEBUG;
+                $na++;                
+            } else {
+                print "# Extraction method failed\n" if $DEBUG;
+                $fail++;
+            }                
         }
 
-        ### warn something went wrong if we didn't get an OK ###
-        $self->_error(loc("Extract failed, no extractor found"))
-            unless $ok;
-
+        ### warn something went wrong if we didn't get an extractor
+        unless( $self->_extractor ) {
+            my $diag = $fail ? loc("Extract failed due to errors") :
+                       $na   ? loc("Extract failed; no extractors available") :
+                       '';
+                       
+            $self->_error($diag);
+            $ok = 0;
+        }                   
     }
 
     ### and chdir back ###
@@ -534,42 +575,31 @@ sub have_old_bunzip2 {
 #
 #################################
 
-### untar wrapper... goes to either Archive::Tar or /bin/tar
-### depending on $PREFER_BIN
-sub _untar {
-    my $self = shift;
-
-    ### bzip2 support in A::T via IO::Uncompress::Bzip2
-    my   @methods = qw[_untar_at _untar_bin];
-         @methods = reverse @methods if $PREFER_BIN;
-
-    for my $method (@methods) {
-        $self->_extractor($method) && return 1 if $self->$method();
-    }
-
-    return $self->_error(loc("Unable to untar file '%1'", $self->archive));
-}
 
 ### use /bin/tar to extract ###
 sub _untar_bin {
     my $self = shift;
 
     ### check for /bin/tar ###
-    return $self->_error(loc("No '%1' program found", '/bin/tar'))
-        unless $self->bin_tar;
-
     ### check for /bin/gzip if we need it ###
-    return $self->_error(loc("No '%1' program found", '/bin/gzip'))
-        if $self->is_tgz && !$self->bin_gzip;
-
-    return $self->_error(loc("No '%1' program found", '/bin/bunzip2'))
-        if $self->is_tbz && !$self->bin_bunzip2;
+    ### if any of the binaries are not available, return NA
+    {   my $diag =  not $self->bin_tar ? 
+                        loc("No '%1' program found", '/bin/tar') :
+                    $self->is_tgz && !$self->bin_gzip ? 
+                        loc("No '%1' program found", '/bin/gzip') :
+                    $self->is_tbz && !$self->bin_bunzip2 ?
+                        loc("No '%1' program found", '/bin/bunzip2') :
+                    '';
+                    
+        if( $diag ) {
+            $self->_error( $diag );
+            return METHOD_NA;
+        }
+    }        
 
     ### XXX figure out how to make IPC::Run do this in one call --
     ### currently i don't know how to get output of a command after a pipe
     ### trapped in a scalar. Mailed barries about this 5th of june 2004.
-
-
 
     ### see what command we should run, based on whether
     ### it's a .tgz or .tar
@@ -659,9 +689,11 @@ sub _untar_at {
 
         unless( can_load( modules => $use_list ) ) {
 
-            return $self->_error(loc("You do not have '%1' installed - " .
-                                 "Please install it as soon as possible.",
-                                 'Archive::Tar'));
+            $self->_error(loc("You do not have '%1' installed - " .
+                              "Please install it as soon as possible.",
+                              'Archive::Tar'));
+    
+            return METHOD_NA;
         }
     }
 
@@ -678,18 +710,24 @@ sub _untar_at {
         unless( can_load( modules => $use_list ) ) {
             my $which = join '/', sort keys %$use_list;
 
-            return $self->_error(loc(
-                                "You do not have '%1' installed - Please ".
-                                "install it as soon as possible.", $which));
-
+            $self->_error(loc(
+                "You do not have '%1' installed - Please ".
+                "install it as soon as possible.", $which)
+            );
+            
+            return METHOD_NA;
         }
+
     } elsif ( $self->is_tbz ) {
         my $use_list = { 'IO::Uncompress::Bunzip2' => '0.0' };
         unless( can_load( modules => $use_list ) ) {
-            return $self->_error(loc(
-                    "You do not have '%1' installed - Please " .
-                    "install it as soon as possible.", 
-                     'IO::Uncompress::Bunzip2'));
+            $self->_error(loc(
+                "You do not have '%1' installed - Please " .
+                "install it as soon as possible.", 
+                'IO::Uncompress::Bunzip2')
+            );
+            
+            return METHOD_NA;
         }
 
         my $bz = IO::Uncompress::Bunzip2->new( $self->archive ) or
@@ -754,28 +792,14 @@ sub _untar_at {
 #
 #################################
 
-### gunzip wrapper... goes to either Compress::Zlib or /bin/gzip
-### depending on $PREFER_BIN
-sub _gunzip {
-    my $self = shift;
-
-    my @methods = qw[_gunzip_cz _gunzip_bin];
-       @methods = reverse @methods if $PREFER_BIN;
-
-    for my $method (@methods) {
-        $self->_extractor($method) && return 1 if $self->$method();
-    }
-
-    return $self->_error(loc("Unable to gunzip file '%1'", $self->archive));
-}
-
 sub _gunzip_bin {
     my $self = shift;
 
     ### check for /bin/gzip -- we need it ###
-    return $self->_error(loc("No '%1' program found", '/bin/gzip'))
-        unless $self->bin_gzip;
-
+    unless( $self->bin_gzip ) {
+        $self->_error(loc("No '%1' program found", '/bin/gzip'));
+        return METHOD_NA;
+    }
 
     my $fh = FileHandle->new('>'. $self->_gunzip_to) or
         return $self->_error(loc("Could not open '%1' for writing: %2",
@@ -813,8 +837,9 @@ sub _gunzip_cz {
 
     my $use_list = { 'Compress::Zlib' => '0.0' };
     unless( can_load( modules => $use_list ) ) {
-        return $self->_error(loc("You do not have '%1' installed - Please " .
-                        "install it as soon as possible.", 'Compress::Zlib'));
+        $self->_error(loc("You do not have '%1' installed - Please " .
+                    "install it as soon as possible.", 'Compress::Zlib'));
+        return METHOD_NA;
     }
 
     my $gz = Compress::Zlib::gzopen( $self->archive, "rb" ) or
@@ -842,29 +867,14 @@ sub _gunzip_cz {
 #
 #################################
 
-
-### untar wrapper... goes to either Archive::Tar or /bin/tar
-### depending on $PREFER_BIN
-sub _uncompress {
-    my $self = shift;
-
-    my   @methods = qw[_gunzip_cz _uncompress_bin];
-         @methods = reverse @methods if $PREFER_BIN;
-
-    for my $method (@methods) {
-        $self->_extractor($method) && return 1 if $self->$method();
-    }
-
-    return $self->_error(loc("Unable to untar file '%1'", $self->archive));
-}
-
 sub _uncompress_bin {
     my $self = shift;
 
     ### check for /bin/gzip -- we need it ###
-    return $self->_error(loc("No '%1' program found", '/bin/uncompress'))
-        unless $self->bin_uncompress;
-
+    unless( $self->bin_uncompress ) {
+        $self->_error(loc("No '%1' program found", '/bin/uncompress'));
+        return METHOD_NA;
+    }
 
     my $fh = FileHandle->new('>'. $self->_gunzip_to) or
         return $self->_error(loc("Could not open '%1' for writing: %2",
@@ -904,28 +914,15 @@ sub _uncompress_bin {
 #
 #################################
 
-### unzip wrapper... goes to either Archive::Zip or /bin/unzip
-### depending on $PREFER_BIN
-sub _unzip {
-    my $self = shift;
-
-    my @methods = qw[_unzip_az _unzip_bin];
-       @methods = reverse @methods if $PREFER_BIN;
-
-    for my $method (@methods) {
-        $self->_extractor($method) && return 1 if $self->$method();
-    }
-
-    return $self->_error(loc("Unable to gunzip file '%1'", $self->archive));
-}
 
 sub _unzip_bin {
     my $self = shift;
 
     ### check for /bin/gzip if we need it ###
-    return $self->_error(loc("No '%1' program found", '/bin/unzip'))
-        unless $self->bin_unzip;
-
+    unless( $self->bin_unzip ) {
+        $self->_error(loc("No '%1' program found", '/bin/unzip'));
+        return METHOD_NA;
+    }        
 
     ### first, get the files.. it must be 2 different commands with 'unzip' :(
     {   ### on VMS, capital letter options have to be quoted. This is
@@ -980,8 +977,9 @@ sub _unzip_az {
 
     my $use_list = { 'Archive::Zip' => '0.0' };
     unless( can_load( modules => $use_list ) ) {
-        return $self->_error(loc("You do not have '%1' installed - Please " .
-                        "install it as soon as possible.", 'Archive::Zip'));
+        $self->_error(loc("You do not have '%1' installed - Please " .
+                      "install it as soon as possible.", 'Archive::Zip'));
+        return METHOD_NA;                      
     }
 
     my $zip = Archive::Zip->new();
@@ -1057,27 +1055,14 @@ sub __get_extract_dir {
 #
 #################################
 
-### bunzip2 wrapper... 
-sub _bunzip2 {
-    my $self = shift;
-
-    my @methods = qw[_bunzip2_cz2 _bunzip2_bin];
-       @methods = reverse @methods if $PREFER_BIN;
-
-    for my $method (@methods) {
-        $self->_extractor($method) && return 1 if $self->$method();
-    }
-
-    return $self->_error(loc("Unable to bunzip2 file '%1'", $self->archive));
-}
-
 sub _bunzip2_bin {
     my $self = shift;
 
     ### check for /bin/gzip -- we need it ###
-    return $self->_error(loc("No '%1' program found", '/bin/bunzip2'))
-        unless $self->bin_bunzip2;
-
+    unless( $self->bin_bunzip2 ) {
+        $self->_error(loc("No '%1' program found", '/bin/bunzip2'));
+        return METHOD_NA;
+    }        
 
     my $fh = FileHandle->new('>'. $self->_gunzip_to) or
         return $self->_error(loc("Could not open '%1' for writing: %2",
@@ -1150,14 +1135,15 @@ sub _bunzip2_bin {
 #     return 1;
 # }
 
-sub _bunzip2_cz2 {
+sub _bunzip2_bz2 {
     my $self = shift;
 
     my $use_list = { 'IO::Uncompress::Bunzip2' => '0.0' };
     unless( can_load( modules => $use_list ) ) {
-        return $self->_error(loc("You do not have '%1' installed - Please " .
-                        "install it as soon as possible.",
-                        'IO::Uncompress::Bunzip2'));
+        $self->_error(loc("You do not have '%1' installed - Please " .
+                          "install it as soon as possible.",
+                          'IO::Uncompress::Bunzip2'));
+        return METHOD_NA;                          
     }
 
     IO::Uncompress::Bunzip2::bunzip2($self->archive => $self->_gunzip_to)
@@ -1179,27 +1165,14 @@ sub _bunzip2_cz2 {
 #
 #################################
 
-### unlzma wrapper... goes to either Compress::unLZMA or /bin/unlzma
-### depending on $PREFER_BIN
-sub _unlzma {
-    my $self = shift;
-
-    my @methods = qw[_unlzma_cz _unlzma_bin];
-       @methods = reverse @methods if $PREFER_BIN;
-
-    for my $method (@methods) {
-        $self->_extractor($method) && return 1 if $self->$method();
-    }
-
-    return $self->_error(loc("Unable to unlzma file '%1'", $self->archive));
-}
-
 sub _unlzma_bin {
     my $self = shift;
 
     ### check for /bin/unlzma -- we need it ###
-    return $self->_error(loc("No '%1' program found", '/bin/unlzma'))
-        unless $self->bin_unlzma;
+    unless( $self->bin_unlzma ) {
+        $self->_error(loc("No '%1' program found", '/bin/unlzma'));
+        return METHOD_NA;
+    }        
 
     my $fh = FileHandle->new('>'. $self->_gunzip_to) or
         return $self->_error(loc("Could not open '%1' for writing: %2",
@@ -1237,8 +1210,9 @@ sub _unlzma_cz {
 
     my $use_list = { 'Compress::unLZMA' => '0.0' };
     unless( can_load( modules => $use_list ) ) {
-        return $self->_error(loc("You do not have '%1' installed - Please " .
-                       "install it as soon as possible.", 'Compress::unLZMA'));
+        $self->_error(loc("You do not have '%1' installed - Please " .
+                    "install it as soon as possible.", 'Compress::unLZMA'));
+        return METHOD_NA;                    
     }
 
     my $fh = FileHandle->new('>'. $self->_gunzip_to) or
@@ -1290,7 +1264,11 @@ sub error {
     my $self = shift;
 
     ### make sure we have a fallback aref
-    my $aref = do { shift() ? $self->_error_msg_long : $self->_error_msg } || [];
+    my $aref = do { 
+        shift() 
+            ? $self->_error_msg_long 
+            : $self->_error_msg 
+    } || [];
    
     return join $/, @$aref;
 }
