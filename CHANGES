@@ -1,3 +1,14 @@
+Changes for 0.27_02 Wed Sep 24 17:37:52 2008
+============================================
+* Test & build improvements: users of 0.27_01 need 
+  not upgrade.
+* Test suite would die if no files were reported 
+  to be extracted, because Test::More::is() would
+  choke on a negative array index on an empty array
+  ref.
+* Up dependency of IPC::Cmd to 0.41_05 to handle 
+  pipes and whitespace better on shell out commands.  
+
 Changes for 0.27_01 Mon Sep 22 14:20:20 2008
 ============================================
 * Address: #32751: incorrect error message

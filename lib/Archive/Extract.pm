@@ -38,7 +38,7 @@ use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG
             $_ALLOW_BIN $_ALLOW_PURE_PERL
          ];
 
-$VERSION            = '0.27_01';
+$VERSION            = '0.27_02';
 $PREFER_BIN         = 0;
 $WARN               = 1;
 $DEBUG              = 0;
