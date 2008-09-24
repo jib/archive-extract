@@ -275,15 +275,16 @@ SKIP: {   my $meth = '__get_extract_dir';
 
 ### configuration to run in: allow perl or allow binaries
 for my $switch ( [0,1], [1,0] ) {
+    my $cfg = "PP: $switch->[0] Bin: $switch->[1]";
 
     local $Archive::Extract::_ALLOW_PURE_PERL   = $switch->[0];
     local $Archive::Extract::_ALLOW_BIN         = $switch->[1];
     
-    diag("Running extract with configuration: ", join ' ', @$switch) if $Debug;
+    diag("Running extract with configuration: $cfg") if $Debug;
 
     for my $archive (keys %$tmpl) {
 
-        diag("Extracting $archive") if $Debug;
+        diag("Extracting $archive in config $cfg") if $Debug;
 
         ### check first if we can do the proper
 
@@ -377,7 +378,7 @@ for my $switch ( [0,1], [1,0] ) {
                     skip "No extractor available", 8 
                         if $err =~ /Extract failed; no extractors available/;
     
-                    ok( $rv, "extract() for '$archive' reports success");
+                    ok( $rv, "extract() for '$archive' reports success ($cfg)");
     
                     diag("Extractor was: " . $ae->_extractor)   if $Debug;
     
@@ -388,10 +389,16 @@ for my $switch ( [0,1], [1,0] ) {
     
                     ### might be 1 or 2, depending wether we extracted 
                     ### a dir too
+                    my $files    = $ae->files || [];
                     my $file_cnt = grep { defined } $file, $dir;
-                    is( scalar @{ $ae->files || []}, $file_cnt,
+                    is( scalar @$files, $file_cnt,
                                     "Found correct number of output files" );
-                    is( $ae->files->[-1], $nix_path,
+                    
+                    ### due to prototypes on is(), if there's no -1 index on
+                    ### the array ref, it'll give a fatal exception:
+                    ### "Modification of non-creatable array value attempted,
+                    ### subscript -1 at -e line 1." So wrap it in do { }
+                    is( do { $files->[-1] }, $nix_path,
                                     "Found correct output file '$nix_path'" );
     
                     ok( -e $abs_path,
