@@ -130,12 +130,14 @@ my $Mapping = {  # binary program           # pure perl module
     is_lzma => { bin => '_unlzma_bin',      pp => '_unlzma_cz'  },
 };
 
-{
+{   ### use subs so we re-generate array refs etc for the no-overide flags
+    ### if we don't, then we reuse the same arrayref, meaning objects store
+    ### previous errors
     my $tmpl = {
-        archive         => { required => 1, allow => FILE_EXISTS },
-        type            => { default => '', allow => [ @Types ] },
-        _error_msg      => { no_override => 1, default => [], },
-        _error_msg_long => { no_override => 1, default => [], },
+        archive         => sub { { required => 1, allow => FILE_EXISTS }    },
+        type            => sub { { default => '', allow => [ @Types ] }     },
+        _error_msg      => sub { { no_override => 1, default => [] }        },
+        _error_msg_long => sub { { no_override => 1, default => [] }        },
     };
 
     ### build accesssors ###
@@ -213,8 +215,12 @@ Returns a C<Archive::Extract> object on success, or false on failure.
     sub new {
         my $class   = shift;
         my %hash    = @_;
+        
+        ### see above why we use subs here and generate the template;
+        ### it's basically to not re-use arrayrefs
+        my %utmpl   = map { $_ => $tmpl->{$_}->() } keys %$tmpl;
 
-        my $parsed = check( $tmpl, \%hash ) or return;
+        my $parsed = check( \%utmpl, \%hash ) or return;
 
         ### make sure we have an absolute path ###
         my $ar = $parsed->{archive} = File::Spec->rel2abs( $parsed->{archive} );
@@ -234,11 +240,13 @@ Returns a C<Archive::Extract> object on success, or false on failure.
 
         }
 
-        ### don't know what type of file it is ###
-        return __PACKAGE__->_error(loc("Cannot determine file type for '%1'",
-                                $parsed->{archive} )) unless $parsed->{type};
+        bless $parsed, $class;
 
-        return bless $parsed, $class;
+        ### don't know what type of file it is 
+        ### XXX this *has* to be an object call, not a package call
+        return $parsed->_error(loc("Cannot determine file type for '%1'",
+                                $parsed->{archive} )) unless $parsed->{type};
+        return $parsed;
     }
 }
 

@@ -207,6 +207,18 @@ if( $Debug ) {
         ok( $obj,               "   Object created based on '$type'" );
         ok( !$obj->error,       "       No error logged" );
     }
+    
+    ### test unknown type
+    {   my $warnings;
+        local $SIG{__WARN__} = sub { $warnings .= "@_" };
+        
+        my $ae = $Class->new( archive => $Me );
+        ok( !$ae,               "   No archive created based on '$Me'" );
+        ok( !$Class->error,     "       Error not captured in class method" );
+        ok( $warnings,          "       Error captured as warning" );
+        like( $warnings, qr/Cannot determine file type for/,
+                                "           Error is: unknown file type" );
+    }                                
 }    
 
 ### test multiple errors
