@@ -209,7 +209,10 @@ if( $Debug ) {
     }
     
     ### test unknown type
-    {   my $warnings;
+    {   ### must turn on warnings to catch error here
+        local $Archive::Extract::WARN = 1;
+        
+        my $warnings;
         local $SIG{__WARN__} = sub { $warnings .= "@_" };
         
         my $ae = $Class->new( archive => $Me );
