@@ -757,7 +757,7 @@ sub _untar_at {
     }
 
     ### for version of archive::tar > 1.04
-    local $Archive::Tar::Constant::CHOWN = 0;
+    local $Archive::Tar::CHOWN = 0;
 
     {   local $^W;  # quell 'splice() offset past end of array' warnings
                     # on older versions of A::T
