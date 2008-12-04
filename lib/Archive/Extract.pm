@@ -692,7 +692,16 @@ sub _untar_bin {
 sub _untar_at {
     my $self = shift;
 
-    ### we definitely need A::T, so load that first
+    ### Loading Archive::Tar is going to set it to 1, so make it local
+    ### within this block, starting with its initial value. Whatever
+    ### Achive::Tar does will be undone when we return.
+    ###
+    ### Also, later, set $Archive::Tar::WARN to $Archive::Extract::WARN
+    ### so users don't have to even think about this variable. If they
+    ### do, they still get their set value outside of this call.
+    local $Archive::Tar::WARN = $Archive::Tar::WARN;
+   
+    ### we definitely need Archive::Tar, so load that first
     {   my $use_list = { 'Archive::Tar' => '0.0' };
 
         unless( can_load( modules => $use_list ) ) {
@@ -746,6 +755,10 @@ sub _untar_at {
         $fh_to_read = $bz;
     }
 
+    ### $Archive::Tar::WARN is 1 by default in Archive::Tar, but we've
+    ### localized $Archive::Tar::WARN already.
+    $Archive::Tar::WARN = $Archive::Extract::WARN;
+
     my $tar = Archive::Tar->new();
 
     ### only tell it it's compressed if it's a .tgz, as we give it a file
@@ -764,7 +777,7 @@ sub _untar_at {
         *Archive::Tar::chown = sub {};
     }
 
-    ### for version of archive::tar > 1.04
+    ### for version of Archive::Tar > 1.04
     local $Archive::Tar::CHOWN = 0;
 
     {   local $^W;  # quell 'splice() offset past end of array' warnings
