@@ -1,3 +1,11 @@
+Changes for 0.28    Fri Oct 10 15:22:51 2008
+============================================
+* Address: #39554: Must set $Archive::Tar::CHOWN, not
+  $Archive::Tar::Constant::CHOWN to control the chown()
+  functionality when using Archive::Tar.
+* Various test suite improvements to test warnings 
+  and errors emitted by Archive::Extract.
+
 Changes for 0.27_02 Wed Sep 24 17:37:52 2008
 ============================================
 * Test & build improvements: users of 0.27_01 need 
