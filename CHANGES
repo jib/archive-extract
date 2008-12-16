@@ -1,3 +1,10 @@
+Changes for 0.30    Tue Dec 16 17:32:13 2008
+============================================
+* This is a test suite fix; users of 0.28 need not upgrade.
+* Archive::Extract would not reliably skip binary extraction
+  tests when no binaries were found in $PATH, which causes
+  test suite failures.
+
 Changes for 0.28    Fri Oct 10 15:22:51 2008
 ============================================
 * Address: #39554: Must set $Archive::Tar::CHOWN, not
