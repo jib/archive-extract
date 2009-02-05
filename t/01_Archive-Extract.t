@@ -409,7 +409,7 @@ for my $switch ( [0,1], [1,0] ) {
                     my $files    = $ae->files || [];
                     my $file_cnt = grep { defined } $file, $dir;
                     is( scalar @$files, $file_cnt,
-                                    "Found correct number of output files" );
+                                    "Found correct number of output files (@$files)" );
                     
                     ### due to prototypes on is(), if there's no -1 index on
                     ### the array ref, it'll give a fatal exception:
