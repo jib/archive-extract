@@ -55,8 +55,8 @@ use_ok($Class);
 
 ### set verbose if debug is on ###
 ### stupid stupid silly stupid warnings silly! ###
-$Archive::Extract::VERBOSE  = $Archive::Extract::VERBOSE = $Debug;
-$Archive::Extract::WARN     = $Archive::Extract::WARN    = $Debug ? 1 : 0;
+$Archive::Extract::DEBUG    = $Archive::Extract::DEBUG  = $Debug;
+$Archive::Extract::WARN     = $Archive::Extract::WARN   = $Debug ? 1 : 0;
 
 
 my $tmpl = {
