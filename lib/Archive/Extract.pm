@@ -20,6 +20,9 @@ use constant FILE_EXISTS    => sub { -e $_[0] ? 1 : 0 };
 ### VMS may require quoting upper case command options
 use constant ON_VMS         => $^O eq 'VMS' ? 1 : 0;
 
+### Windows needs special treatment of Tar options
+use constant ON_WIN32       => $^O eq 'MSWin32' ? 1 : 0;
+
 ### we can't use this extraction method, because of missing
 ### modules/binaries:
 use constant METHOD_NA      => []; 
@@ -583,110 +586,124 @@ sub have_old_bunzip2 {
 #
 #################################
 
+### annoying issue with (gnu) tar on win32, as illustrated by this
+### bug: https://rt.cpan.org/Ticket/Display.html?id=40138
+### which shows that (gnu) tar will interpret a file name with a :
+### in it as a remote file name, so C:\tmp\foo.txt is interpreted
+### as a remote shell, and the extract fails.
+{   my @ExtraTarFlags;
+    if( ON_WIN32 and my $cmd = __PACKAGE__->bin_tar ) {
 
-### use /bin/tar to extract ###
-sub _untar_bin {
-    my $self = shift;
-
-    ### check for /bin/tar ###
-    ### check for /bin/gzip if we need it ###
-    ### if any of the binaries are not available, return NA
-    {   my $diag =  not $self->bin_tar ? 
-                        loc("No '%1' program found", '/bin/tar') :
-                    $self->is_tgz && !$self->bin_gzip ? 
-                        loc("No '%1' program found", '/bin/gzip') :
-                    $self->is_tbz && !$self->bin_bunzip2 ?
-                        loc("No '%1' program found", '/bin/bunzip2') :
-                    '';
-                    
-        if( $diag ) {
-            $self->_error( $diag );
-            return METHOD_NA;
-        }
+        ### if this is gnu tar we are running, we need to use --force-local
+        push @ExtraTarFlags, '--force-local' if `$cmd --version` =~ /gnu tar/i;
     }        
 
-    ### XXX figure out how to make IPC::Run do this in one call --
-    ### currently i don't know how to get output of a command after a pipe
-    ### trapped in a scalar. Mailed barries about this 5th of june 2004.
 
-    ### see what command we should run, based on whether
-    ### it's a .tgz or .tar
-
-    ### XXX solaris tar and bsdtar are having different outputs
-    ### depending whether you run with -x or -t
-    ### compensate for this insanity by running -t first, then -x
-    {    my $cmd = 
-            $self->is_tgz ? [$self->bin_gzip, '-cdf', $self->archive, '|',
-                             $self->bin_tar, '-tf', '-'] :
-            $self->is_tbz ? [$self->bin_bunzip2, '-cd', $self->archive, '|',                             
-                             $self->bin_tar, '-tf', '-'] :
-            [$self->bin_tar, '-tf', $self->archive];
-
-        ### run the command ###
-        my $buffer = '';
-        unless( scalar run( command => $cmd,
-                            buffer  => \$buffer,
-                            verbose => $DEBUG )
-        ) {
-            return $self->_error(loc(
-                            "Error listing contents of archive '%1': %2",
-                            $self->archive, $buffer ));
-        }
-
-        ### no buffers available?
-        if( !IPC::Cmd->can_capture_buffer and !$buffer ) {
-            $self->_error( $self->_no_buffer_files( $self->archive ) );
-        
-        } else {
-            ### if we're on solaris we /might/ be using /bin/tar, which has
-            ### a weird output format... we might also be using
-            ### /usr/local/bin/tar, which is gnu tar, which is perfectly
-            ### fine... so we have to do some guessing here =/
-            my @files = map { chomp;
-                          !ON_SOLARIS ? $_
-                                      : (m|^ x \s+  # 'xtract' -- sigh
-                                            (.+?),  # the actual file name
-                                            \s+ [\d,.]+ \s bytes,
-                                            \s+ [\d,.]+ \s tape \s blocks
-                                        |x ? $1 : $_);
-
-                    } split $/, $buffer;
-
-            ### store the files that are in the archive ###
-            $self->files(\@files);
-        }
-    }
-
-    ### now actually extract it ###
-    {   my $cmd = 
-            $self->is_tgz ? [$self->bin_gzip, '-cdf', $self->archive, '|',
-                             $self->bin_tar, '-xf', '-'] :
-            $self->is_tbz ? [$self->bin_bunzip2, '-cd', $self->archive, '|',                             
-                             $self->bin_tar, '-xf', '-'] :
-            [$self->bin_tar, '-xf', $self->archive];
-
-        my $buffer = '';
-        unless( scalar run( command => $cmd,
-                            buffer  => \$buffer,
-                            verbose => $DEBUG )
-        ) {
-            return $self->_error(loc("Error extracting archive '%1': %2",
-                            $self->archive, $buffer ));
-        }
-
-        ### we might not have them, due to lack of buffers
-        if( $self->files ) {
-            ### now that we've extracted, figure out where we extracted to
-            my $dir = $self->__get_extract_dir( $self->files );
+    ### use /bin/tar to extract ###
+    sub _untar_bin {
+        my $self = shift;
     
-            ### store the extraction dir ###
-            $self->extract_path( $dir );
+        ### check for /bin/tar ###
+        ### check for /bin/gzip if we need it ###
+        ### if any of the binaries are not available, return NA
+        {   my $diag =  not $self->bin_tar ? 
+                            loc("No '%1' program found", '/bin/tar') :
+                        $self->is_tgz && !$self->bin_gzip ? 
+                            loc("No '%1' program found", '/bin/gzip') :
+                        $self->is_tbz && !$self->bin_bunzip2 ?
+                            loc("No '%1' program found", '/bin/bunzip2') :
+                        '';
+                        
+            if( $diag ) {
+                $self->_error( $diag );
+                return METHOD_NA;
+            }
+        }        
+    
+        ### XXX figure out how to make IPC::Run do this in one call --
+        ### currently i don't know how to get output of a command after a pipe
+        ### trapped in a scalar. Mailed barries about this 5th of june 2004.
+    
+        ### see what command we should run, based on whether
+        ### it's a .tgz or .tar
+    
+        ### XXX solaris tar and bsdtar are having different outputs
+        ### depending whether you run with -x or -t
+        ### compensate for this insanity by running -t first, then -x
+        {    my $cmd = 
+                $self->is_tgz ? [$self->bin_gzip, '-cdf', $self->archive, '|', 
+                                 $self->bin_tar, '-tf', '-'] :
+                $self->is_tbz ? [$self->bin_bunzip2, '-cd', $self->archive, '|',                             
+                                 $self->bin_tar, '-tf', '-'] :
+                [$self->bin_tar, @ExtraTarFlags, '-tf', $self->archive];
+    
+            ### run the command ###
+            my $buffer = '';
+            unless( scalar run( command => $cmd,
+                                buffer  => \$buffer,
+                                verbose => $DEBUG )
+            ) {
+                return $self->_error(loc(
+                                "Error listing contents of archive '%1': %2",
+                                $self->archive, $buffer ));
+            }
+    
+            ### no buffers available?
+            if( !IPC::Cmd->can_capture_buffer and !$buffer ) {
+                $self->_error( $self->_no_buffer_files( $self->archive ) );
+            
+            } else {
+                ### if we're on solaris we /might/ be using /bin/tar, which has
+                ### a weird output format... we might also be using
+                ### /usr/local/bin/tar, which is gnu tar, which is perfectly
+                ### fine... so we have to do some guessing here =/
+                my @files = map { chomp;
+                              !ON_SOLARIS ? $_
+                                          : (m|^ x \s+  # 'xtract' -- sigh
+                                                (.+?),  # the actual file name
+                                                \s+ [\d,.]+ \s bytes,
+                                                \s+ [\d,.]+ \s tape \s blocks
+                                            |x ? $1 : $_);
+    
+                        } split $/, $buffer;
+    
+                ### store the files that are in the archive ###
+                $self->files(\@files);
+            }
         }
+    
+        ### now actually extract it ###
+        {   my $cmd = 
+                $self->is_tgz ? [$self->bin_gzip, '-cdf', $self->archive, '|',
+                                 $self->bin_tar, '-xf', '-'] :
+                $self->is_tbz ? [$self->bin_bunzip2, '-cd', $self->archive, '|',                             
+                                 $self->bin_tar, '-xf', '-'] :
+                [$self->bin_tar, @ExtraTarFlags, '-xf', $self->archive];
+    
+            my $buffer = '';
+            unless( scalar run( command => $cmd,
+                                buffer  => \$buffer,
+                                verbose => $DEBUG )
+            ) {
+                return $self->_error(loc("Error extracting archive '%1': %2",
+                                $self->archive, $buffer ));
+            }
+    
+            ### we might not have them, due to lack of buffers
+            if( $self->files ) {
+                ### now that we've extracted, figure out where we extracted to
+                my $dir = $self->__get_extract_dir( $self->files );
+        
+                ### store the extraction dir ###
+                $self->extract_path( $dir );
+            }
+        }
+    
+        ### we got here, no error happened
+        return 1;
     }
-
-    ### we got here, no error happened
-    return 1;
 }
+
 
 ### use archive::tar to extract ###
 sub _untar_at {
