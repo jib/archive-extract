@@ -42,22 +42,27 @@ if ((IS_WIN32 or IS_CYGWIN) && ! $ENV{PERL_CORE}) {
     diag( "See bug #19713 in rt.cpan.org. It is safe to ignore them" );
 }
 
-my $Debug   = $ARGV[0] ? 1 : 0;
 my $Me      = basename( $0 );
 my $Class   = 'Archive::Extract';
+
+use_ok($Class);
+
+### debug will always be enabled on dev versions
+my $Debug   = ($ARGV[0] or $Archive::Extract::VERSION =~ /_/) ? 1 : 0;
+
 my $Self    = File::Spec->rel2abs( 
                     IS_WIN32 ? &Win32::GetShortPathName( cwd() ) : cwd() 
                 );
 my $SrcDir  = File::Spec->catdir( $Self,'src' );
 my $OutDir  = File::Spec->catdir( $Self,'out' );
 
-use_ok($Class);
-
-### set verbose if debug is on ###
 ### stupid stupid silly stupid warnings silly! ###
-$Archive::Extract::DEBUG    = $Archive::Extract::DEBUG  = $Debug;
-$Archive::Extract::WARN     = $Archive::Extract::WARN   = $Debug ? 1 : 0;
+if( $Debug ) {
+    $Archive::Extract::DEBUG    = $Archive::Extract::DEBUG  = 1;
+    $Archive::Extract::WARN     = $Archive::Extract::WARN   = 1;
 
+    diag( "\n\n*** DEBUG INFORMATION ENABLED ***\n\n" );
+}
 
 my $tmpl = {
     ### plain files
