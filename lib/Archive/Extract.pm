@@ -1027,11 +1027,31 @@ sub _unzip_az {
     }
 
     my @files;
-    ### have to extract every memeber individually ###
+    
+    
+    ### Address: #43278: Explicitly tell Archive::Zip where to put the files:
+    ### "In my BackPAN indexing, Archive::Zip was extracting things
+    ### in my script's directory instead of the current working directory.
+    ### I traced this back through Archive::Zip::_asLocalName which
+    ### eventually calls File::Spec::Win32::rel2abs which on Windows might
+    ### call Cwd::getdcwd. getdcwd returns the wrong directory in my
+    ### case, even though I think I'm on the same drive.
+    ### 
+    ### To fix this, I pass the optional second argument to
+    ### extractMember using the cwd from Archive::Extract." --bdfoy
+
+    ## store cwd() before looping; calls to cwd() can be expensive, and
+    ### it won't change during the loop
+    my $extract_dir = cwd();
+    
+    ### have to extract every member individually ###
     for my $member ($zip->members) {
         push @files, $member->{fileName};
 
-        unless( $zip->extractMember($member) == &Archive::Zip::AZ_OK ) {
+        ### file to extact to, to avoid the above problem
+        my $to = File::Spec->catfile( $extract_dir, $member->{fileName} );
+        
+        unless( $zip->extractMember($member, $to) == &Archive::Zip::AZ_OK ) {
             return $self->_error(loc("Extraction of '%1' from '%2' failed",
                         $member->{fileName}, $self->archive ));
         }
