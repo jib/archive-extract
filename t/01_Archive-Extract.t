@@ -48,7 +48,10 @@ my $Class   = 'Archive::Extract';
 use_ok($Class);
 
 ### debug will always be enabled on dev versions
-my $Debug   = ($ARGV[0] or $Archive::Extract::VERSION =~ /_/) ? 1 : 0;
+my $Debug   = (not $ENV{PERL_CORE} and 
+              ($ARGV[0] or $Archive::Extract::VERSION =~ /_/))
+                ? 1 
+                : 0;
 
 my $Self    = File::Spec->rel2abs( 
                     IS_WIN32 ? &Win32::GetShortPathName( cwd() ) : cwd() 
@@ -57,12 +60,10 @@ my $SrcDir  = File::Spec->catdir( $Self,'src' );
 my $OutDir  = File::Spec->catdir( $Self,'out' );
 
 ### stupid stupid silly stupid warnings silly! ###
-if( $Debug ) {
-    $Archive::Extract::DEBUG    = $Archive::Extract::DEBUG  = 1;
-    $Archive::Extract::WARN     = $Archive::Extract::WARN   = 1;
+$Archive::Extract::DEBUG    = $Archive::Extract::DEBUG  = $Debug;
+$Archive::Extract::WARN     = $Archive::Extract::WARN   = $Debug;
 
-    diag( "\n\n*** DEBUG INFORMATION ENABLED ***\n\n" );
-}
+diag( "\n\n*** DEBUG INFORMATION ENABLED ***\n\n" ) if $Debug;
 
 my $tmpl = {
     ### plain files
