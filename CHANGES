@@ -1,3 +1,20 @@
+Changes for 0.31_02 Tue Mar  3 17:01:26 2009
+============================================
+* Address: #43278: Explicitly tell Archive::Zip where to put the files
+In certain edge cases, archive::zip would extract to dirname($0) instead
+of cwd(); Now we tell Archive::Zip explicitly where to extract to. 
+
+Changes for 0.31_01 Fri Feb  6 15:39:13 2009
+============================================
+* Address #40138; .tar files on Win32 would not extract properly with
+  gnu tar (default on cygwin) under Cmd.exe/Native Win32 system calls.
+  Gnu tar interprets file names with a : in them, like C:\tmp\foo.tar
+  as a remote path, and attempts to execute rsh instead.
+  Archive::Extract now checks for gnu tar on Win32 and adds the 
+  '--force-local' flag to disable this behaviour.
+* Improved diagnostics from the test suite
+* Enabled debugging in the test suite for development releases.
+
 Changes for 0.30    Tue Dec 16 17:32:13 2008
 ============================================
 * This is a test suite fix; users of 0.28 need not upgrade.
