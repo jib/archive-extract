@@ -1,8 +1,17 @@
+Changes for 0.31_03 Wed Mar 11 12:38:43 2009
+============================================
+* Newer versions of 'tar' (1.21 and up) now print record size
+  to STDERR as well if v OR t is given (used to be both). This 
+  is a 'feature' according to the changelog, so we must now only
+  inspect STDOUT, otherwise, failures like these occur:
+  nntp.perl.org/group/perl.cpan.testers/2009/02/msg3230366.html
+  Thanks to tcallawa from RedHat for tracking this down.
+
 Changes for 0.31_02 Tue Mar  3 17:01:26 2009
 ============================================
 * Address: #43278: Explicitly tell Archive::Zip where to put the files
-In certain edge cases, archive::zip would extract to dirname($0) instead
-of cwd(); Now we tell Archive::Zip explicitly where to extract to. 
+  In certain edge cases, archive::zip would extract to dirname($0) instead
+  of cwd(); Now we tell Archive::Zip explicitly where to extract to. 
 
 Changes for 0.31_01 Fri Feb  6 15:39:13 2009
 ============================================
