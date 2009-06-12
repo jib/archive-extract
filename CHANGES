@@ -1,3 +1,11 @@
+Changes for 0.32    Fri Jun 12 13:23:11 2009
+============================================
+* Some tars have extra newlines in their '-x' output, 
+  so grep for 'length' when parsing the file list, or 
+  errors like this one can crop up:
+    http://www.nntp.perl.org/group/perl.cpan.testers/2009/03/msg3476639.html 
+* Add docs that A::E is not always thread safe. See RT #45671
+
 Changes for 0.31_03 Wed Mar 11 12:38:43 2009
 ============================================
 * Newer versions of 'tar' (1.21 and up) now print record size
