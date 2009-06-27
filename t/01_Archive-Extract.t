@@ -413,6 +413,16 @@ for my $switch ( [0,1], [1,0] ) {
                         ### skip tests if we dont have an extractor
                         skip "No extractor available", 8 
                             if $err =~ /Extract failed; no extractors available/;
+                            
+                        ### win32 + bin utils is notorious, and none of them are
+                        ### officially supported by strawberry. So if we 
+                        ### encounter an error while extracting whlie running 
+                        ### with $PREFER_BIN on win32, just skip the tests.
+                        ### See rt#46948: unable to install install on win32
+                        ### for details on the pain
+                        skip "Binary tools on Win32 are very unreliable", 8
+                            if $err and $Archive::Extract::_ALLOW_BIN 
+                                    and IS_WIN32;
         
                         ok( $rv, "extract() for '$archive' reports success ($cfg)");
         
