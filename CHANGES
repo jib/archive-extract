@@ -1,3 +1,13 @@
+Changes for 0.32    Sat Jun 27 14:23:54 2009
+============================================
+* Attempt to address #46948: unable to install install on win32.
+  Binaries on Win32 are notoriously unreliable and Strawberry perl
+  ships with all the needed perl modules, so skip failed binary
+  tests on Win32.
+* Address #47053: Use Archive::Tar iter to keep from read the 
+  tar into memory. Thanks to Robert Krimen and Doug Wilson for 
+  their patches.
+
 Changes for 0.32    Fri Jun 12 13:23:11 2009
 ============================================
 * Some tars have extra newlines in their '-x' output, 
