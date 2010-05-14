@@ -1,3 +1,10 @@
+Changes for 0.40    Fri May 14 13:31:32 2010
+============================================
+* Add support for TZ files, Paul Marquess provided
+  the patches in RT #57387
+* modified the lzma logic to favour IO::Uncompress::Unlzma
+  Paul Marquess via RT #57387
+
 Changes for 0.38    Wed Jan  6 23:48:52 2010
 ============================================
 * Apply a patch from Michael G Schwern RT #53246

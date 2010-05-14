@@ -11,7 +11,11 @@ t/src/x.jar
 t/src/x.par
 t/src/x.tar
 t/src/x.tar.gz
+t/src/x.tar.xz
 t/src/x.tgz
+t/src/x.txz
+t/src/x.xz
+t/src/x.Z
 t/src/x.Z
 t/src/x.zip
 t/src/x.lzma
@@ -20,6 +24,8 @@ t/src/y.par
 t/src/y.tar
 t/src/y.tar.bz2
 t/src/y.tar.gz
+t/src/y.tar.xz
 t/src/y.tbz
 t/src/y.tgz
+t/src/y.txz
 t/src/y.zip
