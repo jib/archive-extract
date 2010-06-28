@@ -1,10 +1,3 @@
-BEGIN { 
-    if( $ENV{PERL_CORE} ) {
-        chdir '../lib/Archive/Extract' if -d '../lib/Archive/Extract';
-        unshift @INC, '../../..', '../../../..';
-    }
-}    
-
 BEGIN { chdir 't' if -d 't' };
 BEGIN { mkdir 'out' unless -d 'out' };
 
