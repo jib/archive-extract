@@ -209,7 +209,7 @@ Corresponds to a C<.bz2> suffix.
 
 =item tbz
 
-Bzip2 compressed tar file, as produced by, for exmample C</bin/tar -j>.
+Bzip2 compressed tar file, as produced by, for example C</bin/tar -j>.
 Corresponds to a C<.tbz> or C<.tar.bz2> suffix.
 
 =item lzma
@@ -224,7 +224,7 @@ Corresponds to a C<.xz> suffix.
 
 =item txz
 
-Xz compressed tar file, as produced by, for exmample C</bin/tar -J>.
+Xz compressed tar file, as produced by, for example C</bin/tar -J>.
 Corresponds to a C<.txz> or C<.tar.xz> suffix.
 
 =back
