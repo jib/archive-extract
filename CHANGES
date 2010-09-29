@@ -1,3 +1,8 @@
+Changes for 0.44    Wed Sep 29 15:51:26 2010
+============================================
+* Apply a patch from brian d foy that adds a
+  debug() method for $DEBUG output.
+
 Changes for 0.42    Mon Jun 28 19:35:17 2010
 ============================================
 * Apply a patch from Robin Barker RT #56927 
