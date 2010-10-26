@@ -15,6 +15,7 @@ use Locale::Maketext::Simple    Style => 'gettext';
 
 ### solaris has silly /bin/tar output ###
 use constant ON_SOLARIS     => $^O eq 'solaris' ? 1 : 0;
+use constant ON_NETBSD      => $^O eq 'netbsd' ? 1 : 0;
 use constant FILE_EXISTS    => sub { -e $_[0] ? 1 : 0 };
 
 ### VMS may require quoting upper case command options
@@ -125,6 +126,12 @@ See the C<HOW IT WORKS> section further down for details.
 ### see what /bin/programs are available ###
 $PROGRAMS = {};
 for my $pgm (qw[tar unzip gzip bunzip2 uncompress unlzma unxz]) {
+    if ( $pgm eq 'unzip' and ON_NETBSD ) {
+      local $IPC::Cmd::INSTANCES = 1;
+      my @possibles = can_run($pgm);
+      ($PROGRAMS->{$pgm}) = grep { m!/usr/pkg/! } can_run($pgm);
+      next;
+    }
     $PROGRAMS->{$pgm} = can_run($pgm);
 }
 
