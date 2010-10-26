@@ -1,5 +1,9 @@
+Changes for 0.46    Tue Oct 26 23:45:52 2010
+============================================
 * Correct speeling errors in docs, spotted by 
   Avar
+* Only use unzip from /usr/pkg/bin when on 
+  NetBSD which will be the Info-ZIP version
 
 Changes for 0.44    Wed Sep 29 15:51:26 2010
 ============================================
