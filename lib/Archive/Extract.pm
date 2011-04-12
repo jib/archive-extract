@@ -686,7 +686,7 @@ sub have_old_bunzip2 {
             ### to STDERR as well if v OR t is given (used to be both). This
             ### is a 'feature' according to the changelog, so we must now only
             ### inspect STDOUT, otherwise, failures like these occur:
-            ### nntp.perl.org/group/perl.cpan.testers/2009/02/msg3230366.html
+            ### http://www.cpantesters.org/cpan/report/3230366
             my $buffer  = '';
             my @out     = run(  command => $cmd,
                                 buffer  => \$buffer,
@@ -719,7 +719,7 @@ sub have_old_bunzip2 {
                         ### only STDOUT, see above. Sometimes, extra whitespace
                         ### is present, so make sure we only pick lines with
                         ### a length
-                        } grep { length } map { split $/, $_ } @{$out[3]};
+                        } grep { length } map { split $/, $_ } join '', @{$out[3]};
 
                 ### store the files that are in the archive ###
                 $self->files(\@files);
