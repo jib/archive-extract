@@ -1,3 +1,7 @@
+Changes for 0.50    Tue Apr 12 19:17:23 2011
+============================================
+* Resolve RT #56208 reported by Apocalypse
+
 Changes for 0.48    Fri Jan  7 20:45:37 2011
 ============================================
 * upstream blead patches from Peter Acklam
