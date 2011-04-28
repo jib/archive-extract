@@ -1,3 +1,8 @@
+Changes for 0.52    Thu Apr 28 20:56:27 2011
+============================================
+* Only use unzip from /usr/local/bin when on
+  FreeBSD which will be the Info-ZIP version
+
 Changes for 0.50    Tue Apr 12 19:17:23 2011
 ============================================
 * Resolve RT #56208 reported by Apocalypse
