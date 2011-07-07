@@ -258,16 +258,16 @@ Returns a C<Archive::Extract> object on success, or false on failure.
         ### figure out the type, if it wasn't already specified ###
         unless ( $parsed->{type} ) {
             $parsed->{type} =
-                $ar =~ /.+?\.(?:tar\.gz|tgz)$/i     ? TGZ   :
-                $ar =~ /.+?\.gz$/i                  ? GZ    :
-                $ar =~ /.+?\.tar$/i                 ? TAR   :
-                $ar =~ /.+?\.(zip|jar|par)$/i       ? ZIP   :
-                $ar =~ /.+?\.(?:tbz2?|tar\.bz2?)$/i ? TBZ   :
-                $ar =~ /.+?\.bz2$/i                 ? BZ2   :
-                $ar =~ /.+?\.Z$/                    ? Z     :
-                $ar =~ /.+?\.lzma$/                 ? LZMA  :
-                $ar =~ /.+?\.(?:txz|tar\.xz)$/i     ? TXZ   :
-                $ar =~ /.+?\.xz$/                   ? XZ    :
+                $ar =~ /.+?\.(?:tar\.gz|tgz)$/i         ? TGZ   :
+                $ar =~ /.+?\.gz$/i                      ? GZ    :
+                $ar =~ /.+?\.tar$/i                     ? TAR   :
+                $ar =~ /.+?\.(zip|jar|ear|war|par)$/i   ? ZIP   :
+                $ar =~ /.+?\.(?:tbz2?|tar\.bz2?)$/i     ? TBZ   :
+                $ar =~ /.+?\.bz2$/i                     ? BZ2   :
+                $ar =~ /.+?\.Z$/                        ? Z     :
+                $ar =~ /.+?\.lzma$/                     ? LZMA  :
+                $ar =~ /.+?\.(?:txz|tar\.xz)$/i         ? TXZ   :
+                $ar =~ /.+?\.xz$/                       ? XZ    :
                 '';
 
         }
