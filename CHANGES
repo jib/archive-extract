@@ -1,3 +1,8 @@
+Changes for 0.54    Mon Aug 22 11:52:18 2011
+============================================
+* Resolve issues on MSWin32 when 'unzip' is
+  found in PATH
+
 Changes for 0.52    Thu Apr 28 20:56:27 2011
 ============================================
 * Only use unzip from /usr/local/bin when on
