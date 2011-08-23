@@ -1,3 +1,8 @@
+Changes for 0.56    Tue Aug 23 15:55:52 2011
+============================================
+* Amend the MSWin32 fixes for 'unzip' to
+  work with Cygwin-based tools too.
+
 Changes for 0.54    Mon Aug 22 11:52:18 2011
 ============================================
 * Resolve issues on MSWin32 when 'unzip' is
