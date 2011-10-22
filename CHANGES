@@ -1,3 +1,9 @@
+Changes for 0.58    Sat Oct 22 20:25:00 2011
+============================================
+* Apply patch from Craig A. Berry [rt#71846]
+  make _untar_bin use Unix-syntax archive names
+  on VMS
+
 Changes for 0.56    Tue Aug 23 15:55:52 2011
 ============================================
 * Amend the MSWin32 fixes for 'unzip' to
