@@ -1,3 +1,8 @@
+Changes for 0.60    Mon Feb 20 22:28:10 2012
+============================================
+* Work around an edge-case on Linux with
+  Busybox's unzip
+
 Changes for 0.58    Sat Oct 22 20:25:00 2011
 ============================================
 * Apply patch from Craig A. Berry [rt#71846]
