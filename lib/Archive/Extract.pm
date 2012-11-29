@@ -1662,7 +1662,7 @@ thread safe. See C<rt.cpan.org> bug C<#45671> for details.
 
 =head1 BUG REPORTS
 
-Please report bugs or other issues to E<lt>bug-archive-extract@rt.cpan.org<gt>.
+Please report bugs or other issues to E<lt>bug-archive-extract@rt.cpan.orgE<gt>.
 
 =head1 AUTHOR
 
