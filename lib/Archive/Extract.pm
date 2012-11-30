@@ -654,7 +654,7 @@ sub have_old_bunzip2 {
         ### check for /bin/tar ###
         ### check for /bin/gzip if we need it ###
         ### if any of the binaries are not available, return NA
-        {   my $diag =  not $self->bin_tar ?
+        {   my $diag =  !$self->bin_tar ?
                             loc("No '%1' program found", '/bin/tar') :
                         $self->is_tgz && !$self->bin_gzip ?
                             loc("No '%1' program found", '/bin/gzip') :
