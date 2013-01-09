@@ -16,6 +16,7 @@ use Locale::Maketext::Simple    Style => 'gettext';
 ### solaris has silly /bin/tar output ###
 use constant ON_SOLARIS     => $^O eq 'solaris' ? 1 : 0;
 use constant ON_NETBSD      => $^O eq 'netbsd' ? 1 : 0;
+use constant ON_OPENBSD     => $^O eq 'openbsd' ? 1 : 0;
 use constant ON_FREEBSD     => $^O eq 'freebsd' ? 1 : 0;
 use constant ON_LINUX       => $^O eq 'linux' ? 1 : 0;
 use constant FILE_EXISTS    => sub { -e $_[0] ? 1 : 0 };
@@ -139,6 +140,10 @@ CMD: for my $pgm (qw[tar unzip gzip bunzip2 uncompress unlzma unxz]) {
       my $opt = ON_VMS ? '"-Z"' : '-Z';
       ($PROGRAMS->{$pgm}) = grep { scalar run(command=> [ $_, $opt, '-1' ]) } can_run($pgm);
       next CMD;
+    }
+    if ( $pgm eq 'tar' and ON_OPENBSD ) {
+      # try gtar first
+      next CMD if $PROGRAMS->{$pgm} = can_run('gtar');
     }
     $PROGRAMS->{$pgm} = can_run($pgm);
 }
