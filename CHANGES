@@ -1,3 +1,8 @@
+Changes for 0.62    Wed Jan  9 21:38:10 2013
+============================================
+* OpenBSD's tar does not like some archives
+  on CPAN, prefer gtar if it is available.
+
 Changes for 0.60    Mon Feb 20 22:28:10 2012
 ============================================
 * Work around an edge-case on Linux with
