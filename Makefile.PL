@@ -12,6 +12,7 @@ WriteMakefile1(
     VERSION_FROM    => 'lib/Archive/Extract.pm', # finds $VERSION
     dist            => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
     PREREQ_PM       => {
+                        'if'                        => 0,
                         'IPC::Cmd'                  => 0.64, # pipe fix
                         'Test::More'                => 0,
                         'File::Spec'                => 0.82,
@@ -21,7 +22,7 @@ WriteMakefile1(
                         'Module::Load::Conditional' => 0.04,
                         'Locale::Maketext::Simple'  => 0,
                     },
-    INSTALLDIRS     => ( $] >= 5.009005 ? 'perl' : 'site' ),
+    INSTALLDIRS     => ( $] >= 5.009005 && $] < 5.012 ? 'perl' : 'site' ),
     AUTHOR          => 'Jos Boumans <kane[at]cpan.org>',
 	ABSTRACT        => 'Generic archive extracting mechanism'
 );
