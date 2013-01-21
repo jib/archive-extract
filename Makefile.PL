@@ -12,6 +12,7 @@ WriteMakefile1(
     VERSION_FROM    => 'lib/Archive/Extract.pm', # finds $VERSION
     dist            => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
     PREREQ_PM       => {
+                        'if'                        => 0,
                         'IPC::Cmd'                  => 0.64, # pipe fix
                         'Test::More'                => 0,
                         'File::Spec'                => 0.82,

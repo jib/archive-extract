@@ -1,4 +1,5 @@
 package Archive::Extract;
+use if $] > 5.017, 'deprecate';
 
 use strict;
 
