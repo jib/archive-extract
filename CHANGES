@@ -1,3 +1,11 @@
+Chnages for 0.64    Sat Jan 26 21:07:03 2013
+============================================
+* Add deprecation usage to warn if the
+  module is loaded from corelib.
+  Archive::Extract is leaving core with
+  v5.20.0, but will remain available from
+  CPAN.
+
 Changes for 0.62    Wed Jan  9 21:38:10 2013
 ============================================
 * OpenBSD's tar does not like some archives
