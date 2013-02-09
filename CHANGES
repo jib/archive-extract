@@ -1,3 +1,8 @@
+Changes for 0.66    Sat Feb  9 18:21:52 2013
+============================================
+* Treat midnightbsd the same as freebsd for
+  the purposes of finding Info-ZIP unzip
+
 Chnages for 0.64    Sat Jan 26 21:07:03 2013
 ============================================
 * Add deprecation usage to warn if the
