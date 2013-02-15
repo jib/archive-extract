@@ -1,3 +1,8 @@
+Changes for 0.68    Fri Feb 15 22:57:09 2013
+============================================
+* Solaris' tar doesn't like some archives on
+  CPAN, prefer gtar if it is available
+
 Changes for 0.66    Sat Feb  9 18:21:52 2013
 ============================================
 * Treat midnightbsd the same as freebsd for
