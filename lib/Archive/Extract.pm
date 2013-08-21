@@ -17,7 +17,7 @@ use Locale::Maketext::Simple    Style => 'gettext';
 ### solaris has silly /bin/tar output ###
 use constant ON_SOLARIS     => $^O eq 'solaris' ? 1 : 0;
 use constant ON_NETBSD      => $^O eq 'netbsd' ? 1 : 0;
-use constant ON_OPENBSD     => $^O eq 'openbsd' ? 1 : 0;
+use constant ON_OPENBSD     => $^O =~ m!^(openbsd|bitrig)$! ? 1 : 0;
 use constant ON_FREEBSD     => $^O =~ m!^(free|midnight)bsd$! ? 1 : 0;
 use constant ON_LINUX       => $^O eq 'linux' ? 1 : 0;
 use constant FILE_EXISTS    => sub { -e $_[0] ? 1 : 0 };
