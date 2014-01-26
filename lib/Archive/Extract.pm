@@ -130,6 +130,10 @@ See the C<HOW IT WORKS> section further down for details.
 ### see what /bin/programs are available ###
 $PROGRAMS = {};
 CMD: for my $pgm (qw[tar unzip gzip bunzip2 uncompress unlzma unxz]) {
+    if ( $pgm eq 'unzip' and ON_FREEBSD and my $unzip = can_run('info-unzip') ) {
+      $PROGRAMS->{$pgm} = $unzip;
+      next CMD;
+    }
     if ( $pgm eq 'unzip' and ( ON_NETBSD or ON_FREEBSD ) ) {
       local $IPC::Cmd::INSTANCES = 1;
       ($PROGRAMS->{$pgm}) = grep { ON_NETBSD ? m!/usr/pkg/! : m!/usr/local! } can_run($pgm);
