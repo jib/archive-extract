@@ -1,3 +1,7 @@
+0.74    Thu Nov 20 10:03:50 2014
+* NetBSD's tar does not like some archives
+  on CPAN, prefer gtar if it is available.
+
 0.72    Sun Jan 26 16:21:07 2014
 
 * On FreeBSD favour info-unzip if it is found
