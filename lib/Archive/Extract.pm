@@ -134,9 +134,14 @@ CMD: for my $pgm (qw[tar unzip gzip bunzip2 uncompress unlzma unxz]) {
       $PROGRAMS->{$pgm} = $unzip;
       next CMD;
     }
-    if ( $pgm eq 'unzip' and ( ON_NETBSD or ON_FREEBSD ) ) {
+    if ( $pgm eq 'unzip' and ON_FREEBSD ) {
       local $IPC::Cmd::INSTANCES = 1;
-      ($PROGRAMS->{$pgm}) = grep { ON_NETBSD ? m!/usr/pkg/! : m!/usr/local! } can_run($pgm);
+      ($PROGRAMS->{$pgm}) = grep { _is_infozip_esque($_) } can_run($pgm);
+      next CMD;
+    }
+    if ( $pgm eq 'unzip' and ON_NETBSD ) {
+      local $IPC::Cmd::INSTANCES = 1;
+      ($PROGRAMS->{$pgm}) = grep { m!/usr/pkg/! } can_run($pgm);
       next CMD;
     }
     if ( $pgm eq 'unzip' and ON_LINUX ) {
@@ -1501,6 +1506,44 @@ sub _unlzma_cz {
     $self->extract_path( File::Spec->rel2abs(cwd()) );
 
     return 1;
+}
+
+#####################################
+#
+# unzip heuristics for FreeBSD-alikes
+#
+#####################################
+
+sub _is_infozip_esque {
+  my $unzip = shift;
+
+  my @strings;
+  my $buf = '';
+
+  {
+    open my $file, '<', $unzip or die "$!\n";
+    binmode $file;
+    local $/ = \1;
+    local $_;
+    while(<$file>) {
+      if ( m![[:print:]]! ) {
+        $buf .= $_;
+        next;
+      }
+      if ( $buf and m![^[:print:]]! ) {
+        push @strings, $buf if length $buf >= 4;
+        $buf = '';
+        next;
+      }
+    }
+  }
+  push @strings, $buf if $buf;
+  foreach my $part ( @strings ) {
+    if ( $part =~ m!ZIPINFO! or $part =~ m!usage:.+?Z1! ) {
+      return $unzip;
+    }
+  }
+  return;
 }
 
 #################################
