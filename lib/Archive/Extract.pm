@@ -48,7 +48,7 @@ use vars qw[$VERSION $PREFER_BIN $PROGRAMS $WARN $DEBUG
             $_ALLOW_BIN $_ALLOW_PURE_PERL $_ALLOW_TAR_ITER
          ];
 
-$VERSION            = '0.76';
+$VERSION            = '0.78';
 $PREFER_BIN         = 0;
 $WARN               = 1;
 $DEBUG              = 0;
@@ -60,6 +60,7 @@ $_ALLOW_TAR_ITER    = 1;    # try to use Archive::Tar->iter if available
 my @Types           = ( TGZ, TAR, GZ, ZIP, BZ2, TBZ, Z, LZMA, XZ, TXZ );
 
 local $Params::Check::VERBOSE = $Params::Check::VERBOSE = 1;
+local $Module::Load::Conditional::FORCE_SAFE_INC = 1;
 
 =pod
 

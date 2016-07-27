@@ -19,7 +19,7 @@ WriteMakefile1(
                         'File::Path'                => 0,
                         'File::Basename'            => 0,
                         'Params::Check'             => 0.07,
-                        'Module::Load::Conditional' => 0.04,
+                        'Module::Load::Conditional' => 0.66,
                         'Locale::Maketext::Simple'  => 0,
                     },
     INSTALLDIRS     => ( $] >= 5.009005 && $] < 5.012 ? 'perl' : 'site' ),
