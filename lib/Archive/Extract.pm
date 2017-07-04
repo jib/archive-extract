@@ -815,8 +815,11 @@ sub _untar_at {
     ### if A::T's version is 0.99 or higher
     if( $self->is_tgz ) {
         my $use_list = { 'Compress::Zlib' => '0.0' };
+        {
+           local $@;
            $use_list->{ 'IO::Zlib' } = '0.0'
-                if $Archive::Tar::VERSION >= '0.99';
+                if eval { Archive::Tar->VERSION('0.99'); 1 };
+        }
 
         unless( can_load( modules => $use_list ) ) {
             my $which = join '/', sort keys %$use_list;
