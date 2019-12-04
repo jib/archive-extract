@@ -650,7 +650,7 @@ sub have_old_bunzip2 {
 ### as a remote shell, and the extract fails.
 {   my @ExtraTarFlags;
     if( ON_WIN32 and my $cmd = __PACKAGE__->bin_tar ) {
-
+        $cmd = $1 if $cmd =~ m{^(.+)}s; # Tainted perl #
         ### if this is gnu tar we are running, we need to use --force-local
         push @ExtraTarFlags, '--force-local' if `$cmd --version` =~ /gnu tar/i;
     }
