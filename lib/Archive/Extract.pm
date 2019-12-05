@@ -729,7 +729,7 @@ sub have_old_bunzip2 {
                 ### a weird output format... we might also be using
                 ### /usr/local/bin/tar, which is gnu tar, which is perfectly
                 ### fine... so we have to do some guessing here =/
-                my @files = map { chomp;
+                my @files = map { chomp; s!\x0D!!g if ON_WIN32;
                               !ON_SOLARIS ? $_
                                           : (m|^ x \s+  # 'xtract' -- sigh
                                                 (.+?),  # the actual file name
