@@ -189,7 +189,7 @@ my $Mapping = {  # binary program           # pure perl module
     }
 
 sub type_for {
-    $_ = shift;
+    local $_ = shift;
     return /.+?\.(?:tar\.gz|tgz)$/i         ? TGZ   :
            /.+?\.gz$/i                      ? GZ    :
            /.+?\.tar$/i                     ? TAR   :
