@@ -1624,7 +1624,7 @@ sub _no_buffer_content {
 
 =head2 type_for($archive)
 
-Given an archive file name, it determins the type by parsing the file
+Given an archive file name, it determines the type by parsing the file
 name extension. Used by C<new()> when the C<type> parameter is not passed.
 Also useful when the archive file does not include a suffix but the file
 name is otherwise known, such as when a file is uploaded to a web server
