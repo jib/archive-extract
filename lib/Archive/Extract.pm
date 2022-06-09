@@ -26,7 +26,7 @@ use constant FILE_EXISTS    => sub { -e $_[0] ? 1 : 0 };
 use constant ON_VMS         => $^O eq 'VMS' ? 1 : 0;
 
 ### Windows needs special treatment of Tar options
-use constant ON_WIN32       => $^O eq 'MSWin32' ? 1 : 0;
+use constant ON_WIN32       => ($^O eq 'MSWin32' || $^O eq 'msys') ? 1 : 0;
 
 ### we can't use this extraction method, because of missing
 ### modules/binaries:
